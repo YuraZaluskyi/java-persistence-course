@@ -8,8 +8,8 @@ import java.util.Map;
 
 public class JdbcUtil {
     static String DEFAULT_DATABASE_NAME = "bobocode_db";
-    static String DEFAULT_USERNAME = "bobouser";
-    static String DEFAULT_PASSWORD = "bobodpass";
+    static String DEFAULT_USERNAME = "sa";
+    static String DEFAULT_PASSWORD = "";
 
     public static DataSource createDefaultInMemoryH2DataSource() {
         String url = formatH2ImMemoryDbUrl(DEFAULT_DATABASE_NAME);
