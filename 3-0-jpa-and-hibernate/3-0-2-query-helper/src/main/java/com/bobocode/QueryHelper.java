@@ -41,18 +41,36 @@ public class QueryHelper {
   public <T> T readWithinTx(Function<EntityManager, T> entityManagerConsumer) {
 //        throw new ExerciseNotCompletedException(); // todo:
     var entityManager = entityManagerFactory.createEntityManager();
+    entityManager.unwrap(Session.class).setDefaultReadOnly(true);
     entityManager.getTransaction().begin();
     try {
       var result = entityManagerConsumer.apply(entityManager);
       entityManager.getTransaction().commit();
       return result;
     } catch (Exception e) {
+      entityManager.getTransaction().rollback();
       throw new QueryHelperException("Error performing query. Transaction is rolled back", e);
     } finally {
-      entityManager.getTransaction().rollback();
+      entityManager.close();
     }
   }
 }
+
+//  public <T> T readWithinTx(Function<EntityManager, T> entityManagerConsumer) {
+//    EntityManager entityManager = entityManagerFactory.createEntityManager();
+//    entityManager.unwrap(Session.class).setDefaultReadOnly(true);
+//    entityManager.getTransaction().begin();
+//    try {
+//      T result = entityManagerConsumer.apply(entityManager);
+//      entityManager.getTransaction().commit();
+//      return result;
+//    } catch (Exception e) {
+//      entityManager.getTransaction().rollback();
+//      throw new QueryHelperException("Transaction is rolled back.", e);
+//    } finally {
+//      entityManager.close();
+//    }
+//  }
 
 
 
