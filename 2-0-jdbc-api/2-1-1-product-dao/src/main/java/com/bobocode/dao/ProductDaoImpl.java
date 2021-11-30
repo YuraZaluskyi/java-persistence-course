@@ -3,18 +3,21 @@ package com.bobocode.dao;
 import com.bobocode.exception.DaoOperationException;
 import com.bobocode.model.Product;
 import com.bobocode.util.ExerciseNotCompletedException;
-
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import javax.sql.DataSource;
 import java.util.List;
+import javax.sql.DataSource;
 import lombok.SneakyThrows;
 
 public class ProductDaoImpl implements ProductDao {
 
   private DataSource dataSource;
+  private static final String FIND_ALL_PRODUCTS = "SELECT * FROM products;";
+  private static final String FIND_ONE_PRODUCT = "SELECT * FROM products WHERE id = ?";
 
   public ProductDaoImpl(DataSource dataSource) {
     this.dataSource = dataSource;
@@ -25,52 +28,127 @@ public class ProductDaoImpl implements ProductDao {
     throw new ExerciseNotCompletedException();// todo
   }
 
-  @SneakyThrows
+//  public List<Product> findAll() {
+//    try (Connection connection = dataSource.getConnection()) {
+//      return findAllProducts(connection);
+//    } catch (SQLException e) {
+//      throw new DaoOperationException("Error finding all products", e);
+//    }
+//  }
+
+  private Product fillFieldsProduct(ResultSet result) {
+    Product product = new Product();
+    try {
+      product.setId(result.getLong(1));
+      product.setName(result.getString(2));
+      product.setProducer(result.getString(3));
+      product.setPrice(result.getBigDecimal(4));
+      product.setExpirationDate(result.getDate(5).toLocalDate());
+      product.setCreationTime(result.getTimestamp(6).toLocalDateTime());
+    } catch (SQLException e) {
+      throw new DaoOperationException("qwe", e);
+    }
+    return product;
+  }
+
+  private Connection getConnection() {
+    Connection connection;
+    try {
+      connection = dataSource.getConnection();
+    } catch (SQLException e) {
+      throw new DaoOperationException("sdc", e);
+    }
+    return connection;
+  }
+
+  private Statement getStatement(Connection connection) {
+    Statement statement;
+    try {
+      statement = connection.createStatement();
+    } catch (SQLException e) {
+      throw new DaoOperationException("sdf", e);
+    }
+    return statement;
+  }
+
+  private PreparedStatement getPrepareStatement(Connection connection, String query) {
+    PreparedStatement preparedStatement;
+    try {
+      preparedStatement = connection.prepareStatement(query);
+    } catch (SQLException e) {
+      throw new DaoOperationException("sdf", e);
+    }
+    return preparedStatement;
+  }
+
+
+  private ResultSet getResultSet(Statement statement, String query) {
+    ResultSet result;
+    try {
+      result = statement.executeQuery(query);
+    } catch (SQLException e) {
+      throw new DaoOperationException("sdf", e);
+    }
+    return result;
+  }
+
+  private ResultSet getResultSet(PreparedStatement statement, Long id) {
+    ResultSet resultSet;
+    try {
+      statement.setLong(1, id);
+      resultSet = statement.executeQuery();
+    } catch (SQLException e) {
+      throw new DaoOperationException("sdfdf", e);
+    }
+    return resultSet;
+  }
+
+  private boolean isHasNext(ResultSet resultSet) {
+    boolean result;
+    try {
+      result = resultSet.next();
+    } catch (SQLException e) {
+      throw new DaoOperationException("edwefe", e);
+    }
+    return result;
+  }
+
+  private void closeConnectionStatement(Connection connection, Statement statement) {
+    try {
+      statement.close();
+      connection.close();
+    } catch (SQLException e) {
+      throw new DaoOperationException("sdf", e);
+    }
+  }
+
   @Override
   public List<Product> findAll() {
 //        throw new ExerciseNotCompletedException();// todo
     List<Product> productList = new ArrayList<>();
-    try (var connection = dataSource.getConnection()) {
-      try (var statement = connection.createStatement()) {
-        var result = statement.executeQuery("SELECT * FROM products;");
-        while (result.next()) {
-          Product product = new Product();
-          product.setId(result.getLong(1));
-          product.setName(result.getString(2));
-          product.setProducer(result.getString(3));
-          product.setPrice(result.getBigDecimal(4));
-          product.setExpirationDate(result.getDate(5).toLocalDate());
-          product.setCreationTime(result.getTimestamp(6).toLocalDateTime());
-          productList.add(product);
-        }
-      } catch (Exception e){
-        throw new DaoOperationException("asd");
-      }
+    var connection = getConnection();
+    var statement = getStatement(connection);
+    var result = getResultSet(statement, FIND_ALL_PRODUCTS);
+    while (isHasNext(result)) {
+      Product product = fillFieldsProduct(result);
+      productList.add(product);
     }
+    closeConnectionStatement(connection, statement);
     return productList;
   }
 
-  @SneakyThrows
   @Override
   public Product findOne(Long id) {
 //    throw new ExerciseNotCompletedException();// todo
+
     var product = new Product();
-    product.setId(id);
-    try (var connection = dataSource.getConnection()) {
-      try (var statement = connection.prepareStatement("SELECT * FROM products WHERE id = (?)")) {
-        statement.setLong(1, id);
-        var result = statement.executeQuery();
-        while (result.next()) {
-          product.setName(result.getString(2));
-          product.setProducer(result.getString(3));
-          product.setPrice(result.getBigDecimal(4));
-          product.setExpirationDate(result.getDate(5).toLocalDate());
-          product.setCreationTime(result.getTimestamp(6).toLocalDateTime());
-        }
-      } catch (Exception e) {
-        throw new DaoOperationException("Product with id = " + id + " does not exist");
-      }
+    var connection = getConnection();
+    var statement = getPrepareStatement(connection, FIND_ONE_PRODUCT);
+    ResultSet result = getResultSet(statement, id);
+    while (isHasNext(result)) {
+      product = fillFieldsProduct(result);
     }
+    closeConnectionStatement(connection, statement);
     return product;
   }
 
