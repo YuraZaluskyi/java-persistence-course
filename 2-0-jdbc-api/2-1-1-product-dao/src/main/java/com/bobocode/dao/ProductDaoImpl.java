@@ -11,7 +11,6 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
-import lombok.SneakyThrows;
 
 public class ProductDaoImpl implements ProductDao {
 
@@ -28,14 +27,6 @@ public class ProductDaoImpl implements ProductDao {
     throw new ExerciseNotCompletedException();// todo
   }
 
-//  public List<Product> findAll() {
-//    try (Connection connection = dataSource.getConnection()) {
-//      return findAllProducts(connection);
-//    } catch (SQLException e) {
-//      throw new DaoOperationException("Error finding all products", e);
-//    }
-//  }
-
   private Product fillFieldsProduct(ResultSet result) {
     Product product = new Product();
     try {
@@ -46,7 +37,7 @@ public class ProductDaoImpl implements ProductDao {
       product.setExpirationDate(result.getDate(5).toLocalDate());
       product.setCreationTime(result.getTimestamp(6).toLocalDateTime());
     } catch (SQLException e) {
-      throw new DaoOperationException("qwe", e);
+      throw new DaoOperationException("Error filling fields", e);
     }
     return product;
   }
@@ -56,7 +47,7 @@ public class ProductDaoImpl implements ProductDao {
     try {
       connection = dataSource.getConnection();
     } catch (SQLException e) {
-      throw new DaoOperationException("sdc", e);
+      throw new DaoOperationException("Error establishing a connection with the database", e);
     }
     return connection;
   }
@@ -66,7 +57,7 @@ public class ProductDaoImpl implements ProductDao {
     try {
       statement = connection.createStatement();
     } catch (SQLException e) {
-      throw new DaoOperationException("sdf", e);
+      throw new DaoOperationException("Error getting a statement from the connection", e);
     }
     return statement;
   }
@@ -76,7 +67,7 @@ public class ProductDaoImpl implements ProductDao {
     try {
       preparedStatement = connection.prepareStatement(query);
     } catch (SQLException e) {
-      throw new DaoOperationException("sdf", e);
+      throw new DaoOperationException("Error getting a prepareStatement from the connection", e);
     }
     return preparedStatement;
   }
@@ -87,7 +78,7 @@ public class ProductDaoImpl implements ProductDao {
     try {
       result = statement.executeQuery(query);
     } catch (SQLException e) {
-      throw new DaoOperationException("sdf", e);
+      throw new DaoOperationException("Error getting a resultSet from the statement", e);
     }
     return result;
   }
@@ -98,7 +89,7 @@ public class ProductDaoImpl implements ProductDao {
       statement.setLong(1, id);
       resultSet = statement.executeQuery();
     } catch (SQLException e) {
-      throw new DaoOperationException("sdfdf", e);
+      throw new DaoOperationException("Error getting a resultSet from the prepareStatement", e);
     }
     return resultSet;
   }
@@ -108,7 +99,7 @@ public class ProductDaoImpl implements ProductDao {
     try {
       result = resultSet.next();
     } catch (SQLException e) {
-      throw new DaoOperationException("edwefe", e);
+      throw new DaoOperationException("Error check is resultSet has next", e);
     }
     return result;
   }
@@ -118,7 +109,7 @@ public class ProductDaoImpl implements ProductDao {
       statement.close();
       connection.close();
     } catch (SQLException e) {
-      throw new DaoOperationException("sdf", e);
+      throw new DaoOperationException("Error closing connection or statement", e);
     }
   }
 
