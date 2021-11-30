@@ -1,5 +1,6 @@
 package com.bobocode.dao;
 
+import com.bobocode.exception.DaoOperationException;
 import com.bobocode.model.Product;
 import com.bobocode.util.ExerciseNotCompletedException;
 
@@ -42,6 +43,8 @@ public class ProductDaoImpl implements ProductDao {
           product.setCreationTime(result.getTimestamp(6).toLocalDateTime());
           productList.add(product);
         }
+      } catch (Exception e){
+        throw new DaoOperationException("asd");
       }
     }
     return productList;
@@ -64,6 +67,8 @@ public class ProductDaoImpl implements ProductDao {
           product.setExpirationDate(result.getDate(5).toLocalDate());
           product.setCreationTime(result.getTimestamp(6).toLocalDateTime());
         }
+      } catch (Exception e) {
+        throw new DaoOperationException("Product with id = " + id + " does not exist");
       }
     }
     return product;
