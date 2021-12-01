@@ -115,6 +115,18 @@ public class ProductDaoImpl implements ProductDao {
     }
   }
 
+  private void checkIsIdProductNull(Product product) {
+    if (product.getId() == null) {
+      throw new DaoOperationException("Product id cannot be null");
+    }
+  }
+
+  private void checkIsIdProductValid(Product product) {
+    if (product.getId() < 0) {
+      throw new DaoOperationException("Product with id = " + product.getId() + " does not exist");
+    }
+  }
+
   @Override
   public List<Product> findAll() {
 //        throw new ExerciseNotCompletedException();// todo
@@ -151,9 +163,8 @@ public class ProductDaoImpl implements ProductDao {
   @Override
   public void remove(Product product) {
 //    throw new ExerciseNotCompletedException();// todo
-    if (product == null) {
-      throw new NullPointerException("Product id cannot be null");
-    }
+    checkIsIdProductNull(product);
+    checkIsIdProductValid(product);
     var connection = getConnection();
     var statement = getPrepareStatement(connection, REMOVE_PRODUCT);
     try {
