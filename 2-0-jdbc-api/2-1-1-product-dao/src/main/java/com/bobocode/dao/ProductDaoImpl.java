@@ -10,13 +10,15 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.sql.DataSource;
 
 public class ProductDaoImpl implements ProductDao {
 
   private DataSource dataSource;
   private static final String FIND_ALL_PRODUCTS = "SELECT * FROM products;";
-  private static final String FIND_ONE_PRODUCT = "SELECT * FROM products WHERE id = ?";
+  private static final String FIND_ONE_PRODUCT = "SELECT * FROM products WHERE id = ?;";
+  private static final String REMOVE_PRODUCT = "DELETE FROM products WHERE id = ?;";
 
   public ProductDaoImpl(DataSource dataSource) {
     this.dataSource = dataSource;
@@ -131,14 +133,12 @@ public class ProductDaoImpl implements ProductDao {
   @Override
   public Product findOne(Long id) {
 //    throw new ExerciseNotCompletedException();// todo
-
     var product = new Product();
     var connection = getConnection();
     var statement = getPrepareStatement(connection, FIND_ONE_PRODUCT);
     ResultSet result = getResultSet(statement, id);
-    while (isHasNext(result)) {
-      product = fillFieldsProduct(result);
-    }
+    isHasNext(result);
+    product = fillFieldsProduct(result);
     closeConnectionStatement(connection, statement);
     return product;
   }
@@ -150,7 +150,19 @@ public class ProductDaoImpl implements ProductDao {
 
   @Override
   public void remove(Product product) {
-    throw new ExerciseNotCompletedException();// todo
-  }
+//    throw new ExerciseNotCompletedException();// todo
+    if (product == null) {
+      throw new NullPointerException("Product id cannot be null");
+    }
+    var connection = getConnection();
+    var statement = getPrepareStatement(connection, REMOVE_PRODUCT);
+    try {
+      statement.setLong(1, product.getId());
+      statement.executeUpdate();
+    } catch (SQLException e) {
+      throw new DaoOperationException("sdf", e);
+    }
+    closeConnectionStatement(connection, statement);
 
+  }
 }
