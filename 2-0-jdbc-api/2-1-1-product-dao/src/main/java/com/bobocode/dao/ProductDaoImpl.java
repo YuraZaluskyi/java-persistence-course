@@ -10,7 +10,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import javax.sql.DataSource;
 
 public class ProductDaoImpl implements ProductDao {
@@ -19,14 +18,10 @@ public class ProductDaoImpl implements ProductDao {
   private static final String FIND_ALL_PRODUCTS = "SELECT * FROM products;";
   private static final String FIND_ONE_PRODUCT = "SELECT * FROM products WHERE id = ?;";
   private static final String REMOVE_PRODUCT = "DELETE FROM products WHERE id = ?;";
+  private static final String SAVE_PRODUCT = "INSERT INTO products (name, producer, price, expirationDate, creationTime) VALUES (?, ?, ?, ?, ?)";
 
   public ProductDaoImpl(DataSource dataSource) {
     this.dataSource = dataSource;
-  }
-
-  @Override
-  public void save(Product product) {
-    throw new ExerciseNotCompletedException();// todo
   }
 
   private Product fillFieldsProduct(ResultSet result) {
@@ -127,6 +122,24 @@ public class ProductDaoImpl implements ProductDao {
     }
   }
 
+  private Statement createStatementForInsert(Connection connection, Product product) {
+    try {
+      var prepareStatement = connection.prepareStatement(SAVE_PRODUCT);
+      prepareStatement.setString(2,product.getName());
+      prepareStatement.setString(3,product.getProducer());
+      prepareStatement.setBigDecimal(4, product.getPrice());
+    } catch (SQLException e) {
+      new DaoOperationException("sf", e);
+    }
+    return null;
+  }
+
+  @Override
+  public void save(Product product) {
+//    throw new ExerciseNotCompletedException();// todo
+
+  }
+
   @Override
   public List<Product> findAll() {
 //        throw new ExerciseNotCompletedException();// todo
@@ -174,6 +187,5 @@ public class ProductDaoImpl implements ProductDao {
       throw new DaoOperationException("sdf", e);
     }
     closeConnectionStatement(connection, statement);
-
   }
 }
