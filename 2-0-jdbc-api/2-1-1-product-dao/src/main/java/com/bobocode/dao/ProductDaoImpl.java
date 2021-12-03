@@ -4,10 +4,13 @@ import com.bobocode.exception.DaoOperationException;
 import com.bobocode.model.Product;
 import com.bobocode.util.ExerciseNotCompletedException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
@@ -125,9 +128,11 @@ public class ProductDaoImpl implements ProductDao {
   private Statement createStatementForInsert(Connection connection, Product product) {
     try {
       var prepareStatement = connection.prepareStatement(SAVE_PRODUCT);
-      prepareStatement.setString(2,product.getName());
-      prepareStatement.setString(3,product.getProducer());
-      prepareStatement.setBigDecimal(4, product.getPrice());
+      prepareStatement.setString(1, product.getName());
+      prepareStatement.setString(2, product.getProducer());
+      prepareStatement.setBigDecimal(3, product.getPrice());
+      prepareStatement.setDate(4, Date.valueOf(product.getExpirationDate()));
+
     } catch (SQLException e) {
       new DaoOperationException("sf", e);
     }
