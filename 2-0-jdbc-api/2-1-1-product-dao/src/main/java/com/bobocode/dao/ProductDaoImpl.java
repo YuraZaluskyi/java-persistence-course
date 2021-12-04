@@ -9,10 +9,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Time;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.sql.DataSource;
 
 public class ProductDaoImpl implements ProductDao {
@@ -21,7 +20,7 @@ public class ProductDaoImpl implements ProductDao {
   private static final String FIND_ALL_PRODUCTS = "SELECT * FROM products;";
   private static final String FIND_ONE_PRODUCT = "SELECT * FROM products WHERE id = ?;";
   private static final String REMOVE_PRODUCT = "DELETE FROM products WHERE id = ?;";
-  private static final String SAVE_PRODUCT = "INSERT INTO products (name, producer, price, expirationDate, creationTime) VALUES (?, ?, ?, ?)";
+  private static final String SAVE_PRODUCT = "INSERT INTO products (name, producer, price, expirationDate) VALUES (?, ?, ?, ?)";
 
   public ProductDaoImpl(DataSource dataSource) {
     this.dataSource = dataSource;
@@ -127,6 +126,16 @@ public class ProductDaoImpl implements ProductDao {
 
   ////////////////////////////////
 
+//  @Override
+//  public void save(Product product) {
+//    Objects.requireNonNull(product);
+//    try (Connection connection = dataSource.getConnection()) { // try-with-resources will automatically close connection
+//      saveProduct(product, connection);
+//    } catch (SQLException e) {
+//      throw new DaoOperationException(String.format("Error saving product: %s", product), e);
+//    }
+//  }
+
 //  private void saveProduct(Product product, Connection connection) throws SQLException {
 //    PreparedStatement insertStatement = prepareInsertStatement(product, connection);
 //    insertStatement.executeUpdate();
@@ -163,6 +172,13 @@ public class ProductDaoImpl implements ProductDao {
 //  }
   ////////////////////////////////////
 
+  private void saveProduct(Product product, Connection connection) throws SQLException {
+    var insertPreparedStatement = createPrepareStatementForInsert(connection, product);
+    insertPreparedStatement.executeUpdate();
+    Long id = getGeneratedId(insertPreparedStatement);
+    product.setId(id);
+  }
+
   private Long getGeneratedId(PreparedStatement preparedStatement) throws SQLException {
     ResultSet resultSet = preparedStatement.getGeneratedKeys();
     if (resultSet.next()) {
@@ -179,7 +195,7 @@ public class ProductDaoImpl implements ProductDao {
       preparedStatement.setBigDecimal(3, product.getPrice());
       preparedStatement.setDate(4, Date.valueOf(product.getExpirationDate()));
     } catch (SQLException e) {
-      throw new DaoOperationException("sa", e);
+      throw new DaoOperationException("saaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", e);
     }
   }
 
@@ -192,15 +208,32 @@ public class ProductDaoImpl implements ProductDao {
       fillPreparedStatement(preparedStatement, product);
 
     } catch (SQLException e) {
-      throw new DaoOperationException("sf", e);
+      throw new DaoOperationException("Error saving product: " + product, e);
     }
     return preparedStatement;
   }
 
+//  /  @Override
+//  public void save(Product product) {
+//    Objects.requireNonNull(product);
+//    try (Connection connection = dataSource.getConnection()) { // try-with-resources will automatically close connection
+//      saveProduct(product, connection);
+//    } catch (SQLException e) {
+//      throw new DaoOperationException(String.format("Error saving product: %s", product), e);
+//    }
+//  }
+
+
   @Override
   public void save(Product product) {
 //    throw new ExerciseNotCompletedException();// todo
-    
+    Objects.requireNonNull(product);
+    try (Connection connection = dataSource.getConnection()) {
+      saveProduct(product, connection);
+    } catch (SQLException e) {
+      throw new DaoOperationException("sdfdsfds", e);
+    }
+
 
   }
 
