@@ -213,17 +213,6 @@ public class ProductDaoImpl implements ProductDao {
     return preparedStatement;
   }
 
-//  /  @Override
-//  public void save(Product product) {
-//    Objects.requireNonNull(product);
-//    try (Connection connection = dataSource.getConnection()) { // try-with-resources will automatically close connection
-//      saveProduct(product, connection);
-//    } catch (SQLException e) {
-//      throw new DaoOperationException(String.format("Error saving product: %s", product), e);
-//    }
-//  }
-
-
   @Override
   public void save(Product product) {
 //    throw new ExerciseNotCompletedException();// todo
@@ -255,6 +244,9 @@ public class ProductDaoImpl implements ProductDao {
   @Override
   public Product findOne(Long id) {
 //    throw new ExerciseNotCompletedException();// todo
+    if (id < 0){
+      throw new DaoOperationException("Product with id = " + id + " does not exist");
+    }
     var product = new Product();
     var connection = getConnection();
     var statement = getPrepareStatement(connection, FIND_ONE_PRODUCT);
